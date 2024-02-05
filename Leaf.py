@@ -5,22 +5,53 @@ import io
 import tkinter as tk
 from tkinter import filedialog
 import progressbar
+import numpy as np
+import cv2
 
-# Removes background from image and saves output to given path
+# Removes background and shadows from image and saves output to given path
 def remove_background(input_path, output_path):
+    # Open image and read data
+    with open(input_path, "rb") as input_file:
+        input_data = input_file.read()
 
-  # Open image and read data
-  with open(input_path, "rb") as input_file:
-    input_data = input_file.read()
-  
-  # Use rembg to remove background    
-  output_data = rembg.remove(input_data)
-  
-  # Open the image again from the modified data
-  output_image = Image.open(io.BytesIO(output_data))
+    # Convert the image to a NumPy array for further processing
+    img_array = np.array(Image.open(io.BytesIO(input_data)))
 
-  # Save the foreground image to output path
-  output_image.save(output_path)
+    # Shadow removal code
+    img_array = remove_shadows(img_array)
+
+    # Convert the array back to an image for rembg
+    img_pil = Image.fromarray(img_array)
+
+    # Use rembg to remove background    
+    output_data = rembg.remove(np.array(img_pil))
+
+    # Open the image again from the modified data
+    output_image = Image.open(io.BytesIO(output_data))
+
+    # Save the processed image to output path
+    output_image.save(output_path)
+
+# Shadow removal function
+def remove_shadows(img_array):
+    hsv = cv2.cvtColor(img_array, cv2.COLOR_BGR2HSV)
+    lower = np.array([0, 0, 44])
+    upper = np.array([72, 255, 255])
+    mask = cv2.inRange(hsv, lower, upper)
+
+    cnts = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    cnts = cnts[0] if len(cnts) == 2 else cnts[1]
+    cnts = sorted(cnts, key=cv2.contourArea, reverse=True)
+
+    blank_mask = np.zeros(img_array.shape, dtype=np.uint8)
+    original = img_array.copy()
+
+    for c in cnts:
+        cv2.drawContours(blank_mask, [c], -1, (255, 255, 255), -1)
+        break
+
+    result = cv2.bitwise_and(original, blank_mask)
+    return result
 
 
 # Goes through all files in input folder, removes background, 
