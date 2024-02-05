@@ -31,7 +31,7 @@ def remove_shadow(image_path):
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
     # Apply thresholding
-    _, binary_threshold = cv2.threshold(gray, 40, 255, cv2.THRESH_BINARY)
+    _, binary_threshold = cv2.threshold(gray, 55, 255, cv2.THRESH_BINARY)
 
     # Find contours in the binary image
     contours, _ = cv2.findContours(binary_threshold, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
