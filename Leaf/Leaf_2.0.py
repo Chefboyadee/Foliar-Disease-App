@@ -24,29 +24,32 @@ def remove_background(input_path, output_path):
   output_image.save(output_path)
 
 def remove_shadow(image_path):
-  # Read the image
-    image = cv2.imread(image_path)
+   # Read the image
+    original_image = cv2.imread(image_path)
 
-    # Convert the image to grayscale
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    # Convert the image to HSV color space
+    hsv_image = cv2.cvtColor(original_image, cv2.COLOR_BGR2HSV)
 
-    # Apply thresholding
-    _, binary_threshold = cv2.threshold(gray, 55, 255, cv2.THRESH_BINARY)
+    # Define the color range for the green color of the leaf
+    lower_green = np.array([5, 0, 40])  # Adjust these values based on your specific image
+    upper_green = np.array([90, 255, 255])  # Adjust these values based on your specific image
 
-    # Find contours in the binary image
-    contours, _ = cv2.findContours(binary_threshold, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    # Threshold the image to obtain a binary mask for the green color
+    green_mask = cv2.inRange(hsv_image, lower_green, upper_green)
 
-    # Find the contour with the maximum area (assumes the leaf is the largest object)
-    max_contour = max(contours, key=cv2.contourArea)
+    # Apply binary thresholding on the original image to separate the leaf from the shadow
+    _, thresholded_image = cv2.threshold(green_mask, 40, 255, cv2.THRESH_BINARY)
 
-    # Create a mask for the leaf
-    leaf_mask = np.zeros_like(gray)
-    cv2.drawContours(leaf_mask, [max_contour], 0, 255, thickness=cv2.FILLED)
+    # Use a median blur to reduce noise
+    thresholded_image = cv2.medianBlur(thresholded_image, 5)
 
-    # Apply the mask to the original image
-    result = cv2.bitwise_and(image, image, mask=leaf_mask)
+    # Convert the binary mask to a 3-channel image
+    thresholded_image_color = cv2.merge([thresholded_image, thresholded_image, thresholded_image])
 
-    return result
+    # Retain only the leaf in the original image using the binary mask
+    final_image = cv2.bitwise_and(original_image, thresholded_image_color)
+
+    return final_image
 
 
 
