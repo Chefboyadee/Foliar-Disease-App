@@ -3,10 +3,10 @@ import numpy as np
 
 def brown_edge_detection(image_path):
     # Read the image
-    image = cv2.imread(image_path)
+    original_image = cv2.imread(image_path)
 
     # Convert the image to the HSV color space
-    hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    hsv_image = cv2.cvtColor(original_image, cv2.COLOR_BGR2HSV)
 
     # Define the lower and upper bounds for the brown color in HSV
     lower_brown = np.array([10, 60, 20])
@@ -18,16 +18,16 @@ def brown_edge_detection(image_path):
     # Perform edge detection on the brown mask using the Canny edge detector
     edges = cv2.Canny(brown_mask, 100, 150)
 
-    # Convert edges to three channels to make it compatible with the original image
-    colored_edges = cv2.cvtColor(edges, cv2.COLOR_GRAY2BGR)
+    # Create an image with the original color where brown pixels are detected
+    brown_color_image = original_image.copy()
+    brown_color_image[brown_mask != 0] = [0, 0, 255]  # Set brown pixels to green for visualization
 
-    # Combine the original image with the colored edges
-    result = cv2.addWeighted(image, 1, colored_edges, 1, 0)
-
-    # Display the original image, the detected edges, and the result
-    cv2.imshow('Original Image', image)
+    # Display the original image, the detected edges, the brown mask, and the result
+    cv2.imshow('Original Image', original_image)
     cv2.imshow('Brown Edges', edges)
-    cv2.imshow('Result', result)
+    cv2.imshow('Brown Mask', cv2.cvtColor(brown_mask, cv2.COLOR_GRAY2BGR))
+    cv2.imshow('Brown Color Image', brown_color_image)
+
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
