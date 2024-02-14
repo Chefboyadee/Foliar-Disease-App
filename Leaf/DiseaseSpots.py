@@ -58,6 +58,6 @@ def brown_edge_detection(input_folder, output_folder):
         cv2.imwrite(os.path.join(image_output_folder, 'processed_image.png'), processed_image)
 
 # Example usage
-input_folder = 'C:\\Users\\Richarde\\Desktop\\images\\late_blight'  # Input folder containing images
-output_folder = 'C:\\Users\\Richarde\\Desktop\\images\\output_folder'  # Output folder for processed images
+input_folder = 'input folder'  # Input folder containing images
+output_folder = 'output folder'  # Output folder for processed images
 brown_edge_detection(input_folder, output_folder)
