@@ -39,6 +39,20 @@ def brown_edge_detection(input_folder, output_folder):
         green_mask = cv2.inRange(hsv_image, lower_green, upper_green)
         yellow_mask = cv2.inRange(hsv_image, lower_yellow, upper_yellow)
 
+        # Calculate the total number of pixels
+        total_pixels = original_image.shape[0] * original_image.shape[1]
+
+        # Calculate the percentage of unhealthy pixels
+        unhealthy_pixels = np.count_nonzero(brown_mask | green_mask | yellow_mask)
+        unhealthy_percentage = (unhealthy_pixels / total_pixels) * 100
+
+        # Calculate the percentage of healthy pixels
+        healthy_percentage = 100 - unhealthy_percentage
+
+        # Create a folder for the current image with healthy and unhealthy percentage information
+        image_output_folder = os.path.join(output_folder, f'image_{idx}_healthy_{healthy_percentage:.2f}_unhealthy_{unhealthy_percentage:.2f}')
+        os.makedirs(image_output_folder, exist_ok=True)
+
         # Create an empty mask for the overlay
         overlay_mask = np.zeros_like(original_image)
 
@@ -50,14 +64,10 @@ def brown_edge_detection(input_folder, output_folder):
         # Overlay the mask on the original image
         processed_image = cv2.addWeighted(original_image, 0.5, overlay_mask, 0.5, 0)
 
-        # Create a folder for the current image
-        image_output_folder = os.path.join(output_folder, f'image_{idx}')
-        os.makedirs(image_output_folder, exist_ok=True)
-
         # Write the processed image to the output folder
         cv2.imwrite(os.path.join(image_output_folder, 'processed_image.png'), processed_image)
 
 # Example usage
-input_folder = 'input folder'  # Input folder containing images
-output_folder = 'output folder'  # Output folder for processed images
+input_folder = 'C:\\Users\\Richarde\\Desktop\\images\\late_blight'  # Input folder containing images
+output_folder = 'C:\\Users\\Richarde\\Desktop\\images\\output_folder'  # Output folder for processed images
 brown_edge_detection(input_folder, output_folder)
