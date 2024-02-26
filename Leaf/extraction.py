@@ -10,7 +10,7 @@ def brown_edge_detection(image_path):
 
     # Define the lower and upper bounds for the brown, green, yellow color in HSV
     lower_brown = np.array([10, 60, 20])
-    upper_brown = np.array([20, 255, 200])
+    upper_brown = np.array([24, 255, 200])
 
     lower_green = np.array([40, 60, 20])
     upper_green = np.array([70, 255, 200])
@@ -39,27 +39,36 @@ def brown_edge_detection(image_path):
     overlay_mask[brown_mask != 0] = [0, 0, 255]  # Set brown pixels to red
     overlay_mask[green_mask != 0] = [0, 255, 0]  # Set green pixels to green
     overlay_mask[yellow_mask != 0] = [0, 255, 255]  # Set yellow pixels to yellow
+    
+    # Combine brown and yellow masks
+    combined_mask = cv2.bitwise_or(brown_mask, yellow_mask)
 
+    # Create color image with the original color where brown and yellow pixels are detected
+    combined_color_image = original_image.copy()
+    combined_color_image[combined_mask != 0] = [0, 255, 255]  # Set combined pixels to yellow for visualization
+    
+    # Apply erosion and dilation to reduce noise in the combined mask
+    kernel = np.ones((5, 5), np.uint8)
+    combined_mask = cv2.erode(combined_mask, kernel, iterations=1)
+    combined_mask = cv2.dilate(combined_mask, kernel, iterations=1)
 
-     # Apply binary thresholding on the original image to separate the leaf from the shadow
-    _, thresholded_image = cv2.threshold(green_mask, 40, 255, cv2.THRESH_BINARY_INV)
-
-    # Use a median blur to reduce noise
-    thresholded_image = cv2.medianBlur(thresholded_image, 5)
+    # Apply binary thresholding on the original image to separate the leaf from the shadow
+    _, thresholded_image = cv2.threshold(combined_mask, 40, 255, cv2.THRESH_BINARY_INV)
 
     # Convert the binary mask to a 3-channel image
     thresholded_image_color = cv2.merge([thresholded_image, thresholded_image, thresholded_image])
+    
 
-    # Retain only the leaf in the original image using the binary mask
-    final_image = cv2.bitwise_and(original_image, thresholded_image_color)
+    # Exclude green pixels from the original image using the binary mask
+    final_image = cv2.bitwise_and(original_image, cv2.bitwise_not(thresholded_image_color))
 
     # Display the combined image
     cv2.imshow('Combined Images', overlay_mask)
-    cv2.imshow('orgin Images', original_image)
-    cv2.imshow('final', final_image)
+    cv2.imshow('Original Images', original_image)
+    cv2.imshow('Final', final_image)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
 # Example usage
-image_path = 'Images/No_BG/septoria_leaf/0a76257e-6a78-459b-8f51-a266805121eb___Matt.S_CG 2527_no_bg.png'
+image_path = 'Images/No_BG/septoria_leaf/0a146952-538a-41e5-a422-b5d50e91771e___Matt.S_CG 6079_no_bg.png'
 brown_edge_detection(image_path)
