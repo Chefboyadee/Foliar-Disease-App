@@ -1,117 +1,83 @@
-{
- "cells": [
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "ac4f6b47",
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "import os\n",
-    "import rembg \n",
-    "from PIL import Image\n",
-    "import io\n",
-    "import tkinter as tk\n",
-    "from tkinter import filedialog\n",
-    "import progressbar\n",
-    "\n",
-    "# Removes background from image and saves output to given path\n",
-    "def remove_background(input_path, output_path):\n",
-    "\n",
-    "  # Open image and read data\n",
-    "  with open(input_path, \"rb\") as input_file:\n",
-    "    input_data = input_file.read()\n",
-    "  \n",
-    "  # Use rembg to remove background    \n",
-    "  output_data = rembg.remove(input_data)\n",
-    "  \n",
-    "  # Open the image again from the modified data\n",
-    "  output_image = Image.open(io.BytesIO(output_data))\n",
-    "\n",
-    "  # Save the foreground image to output path\n",
-    "  output_image.save(output_path)\n",
-    "\n",
-    "\n",
-    "# Goes through all files in input folder, removes background, \n",
-    "# and saves to output folder\n",
-    "def process_images(input_folder, output_folder):\n",
-    "\n",
-    "  # Create output folder if doesn't exist\n",
-    "  if not os.path.exists(output_folder):\n",
-    "    os.makedirs(output_folder)\n",
-    "\n",
-    "  # Loop through all files in input folder\n",
-    "  for i, filename in enumerate(os.listdir(input_folder)):\n",
-    "\n",
-    "    # Only process JPG and jpeg images\n",
-    "    if filename.endswith(\".JPG\") or filename.endswith(\".jpeg\"):\n",
-    "\n",
-    "      # Get full input path \n",
-    "      input_path = os.path.join(input_folder, filename)\n",
-    "      \n",
-    "      # Generate output path in output folder\n",
-    "      output_path = os.path.join(output_folder, f\"{os.path.splitext(filename)[0]}_no_bg.png\")\n",
-    "\n",
-    "      # Call remove_background on this file\n",
-    "      remove_background(input_path, output_path)\n",
-    "\n",
-    "      # Print filename to show progress  \n",
-    "      print(f\"Processed: {filename}\")\n",
-    "\n",
-    "      # Update progress bar\n",
-    "      progbar.update(i+1)\n",
-    "      \n",
-    "\n",
-    "# Main function\n",
-    "if __name__ == \"__main__\":\n",
-    "\n",
-    "  # Use tkinter filedialog to select folders\n",
-    "  root = tk.Tk()\n",
-    "  root.withdraw()\n",
-    "\n",
-    "  input_folder_path = filedialog.askdirectory(title='Select input folder')\n",
-    "  output_folder_path = filedialog.askdirectory(title='Select output folder')\n",
-    "\n",
-    "  # Total files to process\n",
-    "  total_files = len(os.listdir(input_folder_path))\n",
-    "\n",
-    "  # Create progress bar\n",
-    "  progbar = progressbar.ProgressBar(maxval=total_files)\n",
-    "  progbar.start()\n",
-    "\n",
-    "  # Prints when processing starts  \n",
-    "  print(\"Starting image processing...\")\n",
-    "\n",
-    "  # Call processing function\n",
-    "  process_images(input_folder_path, output_folder_path)\n",
-    "\n",
-    "  # Prints when done\n",
-    "  print(\"Processing complete!\")\n",
-    "\n",
-    "  # Close progress bar\n",
-    "  progbar.finish()"
-   ]
-  }
- ],
- "metadata": {
-  "kernelspec": {
-   "display_name": "Python 3 (ipykernel)",
-   "language": "python",
-   "name": "python3"
-  },
-  "language_info": {
-   "codemirror_mode": {
-    "name": "ipython",
-    "version": 3
-   },
-   "file_extension": ".py",
-   "mimetype": "text/x-python",
-   "name": "python",
-   "nbconvert_exporter": "python",
-   "pygments_lexer": "ipython3",
-   "version": "3.11.5"
-  }
- },
- "nbformat": 4,
- "nbformat_minor": 5
-}
+import os
+import rembg 
+from PIL import Image
+import io
+import tkinter as tk
+from tkinter import filedialog
+import progressbar
+
+# Removes background from image and saves output to given path
+def remove_background(input_path, output_path):
+
+  # Open image and read data
+  with open(input_path, "rb") as input_file:
+    input_data = input_file.read()
+  
+  # Use rembg to remove background    
+  output_data = rembg.remove(input_data)
+  
+  # Open the image again from the modified data
+  output_image = Image.open(io.BytesIO(output_data))
+
+  # Save the foreground image to output path
+  output_image.save(output_path)
+
+
+# Goes through all files in input folder, removes background, 
+# and saves to output folder
+def process_images(input_folder, output_folder):
+
+  # Create output folder if doesn't exist
+  if not os.path.exists(output_folder):
+    os.makedirs(output_folder)
+
+  # Loop through all files in input folder
+  for i, filename in enumerate(os.listdir(input_folder)):
+
+    # Only process JPG and jpeg images
+    if filename.endswith(".JPG") or filename.endswith(".jpeg"):
+
+      # Get full input path 
+      input_path = os.path.join(input_folder, filename)
+      
+      # Generate output path in output folder
+      output_path = os.path.join(output_folder, f"{os.path.splitext(filename)[0]}_no_bg.png")
+
+      # Call remove_background on this file
+      remove_background(input_path, output_path)
+
+      # Print filename to show progress  
+      print(f"Processed: {filename}")
+
+      # Update progress bar
+      progbar.update(i+1)
+      
+
+# Main function
+if __name__ == "__main__":
+
+  # Use tkinter filedialog to select folders
+  root = tk.Tk()
+  root.withdraw()
+
+  input_folder_path = filedialog.askdirectory(title='Select input folder')
+  output_folder_path = filedialog.askdirectory(title='Select output folder')
+
+  # Total files to process
+  total_files = len(os.listdir(input_folder_path))
+
+  # Create progress bar
+  progbar = progressbar.ProgressBar(maxval=total_files)
+  progbar.start()
+
+  # Prints when processing starts  
+  print("Starting image processing...")
+
+  # Call processing function
+  process_images(input_folder_path, output_folder_path)
+
+  # Prints when done
+  print("Processing complete!")
+
+  # Close progress bar
+  progbar.finish()
