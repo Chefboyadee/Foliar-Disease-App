@@ -1,32 +1,20 @@
 import cv2
 import numpy as np
 import os
+from PIL import Image, ImageTk
+import tkinter as tk
 
-def brown_edge_detection(input_folder, output_folder):
-    # Create the output folder if it does not exist
-    os.makedirs(output_folder, exist_ok=True)
-
-    # Get the list of files in the input folder
-    files = os.listdir(input_folder)
-
-    # Filter out only image files
-    image_files = [file for file in files if file.lower().endswith(('.png', '.jpg', '.jpeg'))]
-
-    for idx, image_file in enumerate(image_files):
-        # Read the image
-        image_path = os.path.join(input_folder, image_file)
+def brown_edge_detection(image_path):
+        
+   
         original_image = cv2.imread(image_path)
-
-        if original_image is None:
-            print(f"Error: Unable to read image {image_file}")
-            continue
 
         # Convert the image to the HSV color space
         hsv_image = cv2.cvtColor(original_image, cv2.COLOR_BGR2HSV)
 
         # Define the lower and upper bounds for the brown, green, and yellow colors in HSV
         lower_brown = np.array([10, 60, 20])
-        upper_brown = np.array([20, 255, 200])
+        upper_brown = np.array([24, 255, 200])
 
         lower_green = np.array([40, 60, 20])
         upper_green = np.array([70, 255, 200])
@@ -47,16 +35,34 @@ def brown_edge_detection(input_folder, output_folder):
         # Calculate the total number of pixels
         total_pixels = original_image.shape[0] * original_image.shape[1]
 
-        # Calculate the percentage of unhealthy pixels
-        unhealthy_pixels = np.count_nonzero(brown_mask | green_mask | yellow_mask)
+        # Calculate the total number of pixels
+        total_pixels = original_image.shape[0] * original_image.shape[1]
+
+        # Calculate the percentage of unhealthy pixels (brown and yellow)
+        unhealthy_pixels = np.count_nonzero(brown_mask | yellow_mask)
         unhealthy_percentage = (unhealthy_pixels / total_pixels) * 100
 
-        # Calculate the percentage of healthy pixels
-        healthy_percentage = 100 - unhealthy_percentage
+        # Calculate the percentage of healthy pixels (green)
+        healthy_pixels = np.count_nonzero(green_mask)
+        healthy_percentage = (healthy_pixels / total_pixels) * 100
 
-        # Create a folder for the current image with healthy and unhealthy percentage information
-        image_output_folder = os.path.join(output_folder, f'image_{idx}_healthy_{healthy_percentage:.2f}_unhealthy_{unhealthy_percentage:.2f}')
-        os.makedirs(image_output_folder, exist_ok=True)
+        total_percentage = unhealthy_percentage + healthy_percentage
+        unhealthy_percentage = (unhealthy_percentage / total_percentage) * 100
+        healthy_percentage = (healthy_percentage / total_percentage) * 100
+
+
+
+
+
+        root = tk.Tk()
+        root.title("Image Analysis Results")
+
+        unhealthy_label = tk.Label(root, text=f"Unhealthy: {unhealthy_percentage:.1f}%")
+        healthy_label = tk.Label(root, text=f"Healthy: {healthy_percentage:.1f}%")
+
+        unhealthy_label.pack()
+        healthy_label.pack()
+        
 
         # Create an empty mask for the overlay
         overlay_mask = np.zeros_like(original_image)
@@ -66,22 +72,23 @@ def brown_edge_detection(input_folder, output_folder):
         overlay_mask[green_mask != 0] = [0, 255, 0]  # Set green pixels to green
         overlay_mask[yellow_mask != 0] = [0, 255, 255]  # Set yellow pixels to yellow
 
-       
-        # Create a text file
-        healthy_txt = os.path.join(image_output_folder, 'healthy_percentage.txt')
 
-        with open(healthy_txt, 'w') as f:
-            f.write("The percentage of healthy features (pixels) on this leaf is: ") 
-            f.write(str(healthy_percentage))
-            f.write(" %")
-
-        # Overlay the mask on the original image
         processed_image = cv2.addWeighted(original_image, 0.5, overlay_mask, 0.5, 0)
+        processed_image_rgb = cv2.cvtColor(processed_image, cv2.COLOR_BGR2RGB)
+        processed_image_pil = Image.fromarray(processed_image_rgb)
+        processed_image_tk = ImageTk.PhotoImage(processed_image_pil)
 
-        # Write the processed image to the output folder
-        cv2.imwrite(os.path.join(image_output_folder, 'processed_image.png'), processed_image)
+        processed_label = tk.Label(root, image=processed_image_tk)
+        processed_label.image = processed_image_tk
+        processed_label.pack()
 
+
+        root.mainloop()
+
+
+
+
+      
 # Example usage
-input_folder = ("Images/No_BG/late_blight") # Input folder containing images
-output_folder = ("Images/No_BG/test")  # Output folder for processed images
-brown_edge_detection(input_folder, output_folder)
+input_image = ("Images/No_BG/septoria_leaf/0a68a294-30d1-4422-ab7e-a1909ec277f7___JR_Sept.L.S 8443_no_bg.png") 
+brown_edge_detection(input_image)
