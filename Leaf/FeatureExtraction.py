@@ -85,29 +85,12 @@ def brown_edge_detection(image_path):
     energy = graycoprops(glcm, 'energy')
     correlation = graycoprops(glcm, 'correlation')
 
-    # Find contours in the final image
-    gray_final_image = cv2.cvtColor(final_image, cv2.COLOR_BGR2GRAY)
-    _, final_binary_image = cv2.threshold(gray_final_image, 40, 255, cv2.THRESH_BINARY)
-    contours, _ = cv2.findContours(final_binary_image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-    # Draw contours on the final image
-    contour_image = cv2.drawContours(final_image.copy(), contours, -1, (0, 255, 0), 2)
-
-    # Calculate region-based features for each contour
-    contour_features = []
-    for contour in contours:
-        area = cv2.contourArea(contour)
-        perimeter = cv2.arcLength(contour, True)
-        # Add more region-based features extraction as needed
-        contour_features.append([area, perimeter])
-
     # Display texture features
     print("Contrast:", contrast)
     print("Dissimilarity:", dissimilarity)
     print("Homogeneity:", homogeneity)
     print("Energy:", energy)
     print("Correlation:", correlation)
-    print("Contour-based features:", contour_features)
 
     root = tk.Tk()
     root.title("Image Analysis Results")
@@ -118,37 +101,25 @@ def brown_edge_detection(image_path):
 
     # Display unhealthy and healthy percentages
     unhealthy_label = ttk.Label(result_frame, text=f"Unhealthy: {unhealthy_percentage:.1f}%")
-    unhealthy_label.grid(row=0, column=0, sticky="w")
+    unhealthy_label.pack()
 
     healthy_label = ttk.Label(result_frame, text=f"Healthy: {healthy_percentage:.1f}%")
-    healthy_label.grid(row=1, column=0, sticky="w")
+    healthy_label.pack()
 
     # Display texture features in a table
     texture_label = ttk.Label(result_frame, text="Texture Features")
-    texture_label.grid(row=2, column=0, columnspan=2, sticky="w")
+    texture_label.pack()
 
     texture_table = ttk.Treeview(result_frame, columns=("Metric", "Value"), show="headings")
     texture_table.heading("Metric", text="Metric")
     texture_table.heading("Value", text="Value")
-    texture_table.grid(row=3, column=0, columnspan=2, sticky="w")
+    texture_table.pack()
 
-    texture_table.insert("", "end", values=("Contrast", contrast[0, 0]))
-    texture_table.insert("", "end", values=("Dissimilarity", dissimilarity[0, 0]))
-    texture_table.insert("", "end", values=("Homogeneity", homogeneity[0, 0]))
-    texture_table.insert("", "end", values=("Energy", energy[0, 0]))
-    texture_table.insert("", "end", values=("Correlation", correlation[0, 0]))
-
-    # Display contour-based features in a table
-    contour_label = ttk.Label(result_frame, text="Contour-based Features")
-    contour_label.grid(row=4, column=0, columnspan=2, sticky="w")
-
-    contour_table = ttk.Treeview(result_frame, columns=("Feature", "Value"), show="headings")
-    contour_table.heading("Feature", text="Feature")
-    contour_table.heading("Value", text="Value")
-    contour_table.grid(row=5, column=0, columnspan=2, sticky="w")
-
-    for idx, feature in enumerate(contour_features):
-        contour_table.insert("", "end", values=(f"Feature {idx+1}", feature))
+    texture_table.insert("", "end", values=("Contrast", contrast.mean()))
+    texture_table.insert("", "end", values=("Dissimilarity", dissimilarity.mean()))
+    texture_table.insert("", "end", values=("Homogeneity", homogeneity.mean()))
+    texture_table.insert("", "end", values=("Energy", energy.mean()))
+    texture_table.insert("", "end", values=("Correlation", correlation.mean()))
 
     # Display images
     processed_image = cv2.addWeighted(original_image, 0.5, overlay_mask, 0.5, 0)
@@ -160,19 +131,11 @@ def brown_edge_detection(image_path):
     processed_label.image = processed_image_tk
     processed_label.pack()
 
-    contour_image_rgb = cv2.cvtColor(contour_image, cv2.COLOR_BGR2RGB)
-    contour_image_pil = Image.fromarray(contour_image_rgb)
-    contour_image_tk = ImageTk.PhotoImage(contour_image_pil)
-
-    contour_label = tk.Label(root, image=contour_image_tk)
-    contour_label.image = contour_image_tk
-    contour_label.pack()
-
     extracted_image_rgb = cv2.cvtColor(final_image, cv2.COLOR_BGR2RGB)
     extracted_image_pil = Image.fromarray(extracted_image_rgb)
     extracted_image_tk = ImageTk.PhotoImage(extracted_image_pil)
 
-    extracted_label = tk.Label(root, image=extracted_image_tk)
+    extracted_label = tk.Label(result_frame, image=extracted_image_tk)
     extracted_label.image = extracted_image_tk
     extracted_label.pack()
 
