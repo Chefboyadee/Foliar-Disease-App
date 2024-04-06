@@ -57,6 +57,6 @@ def brown_edge_detection(input_folder, output_folder):
     print("Processing complete. Check the output folder for the results.")
 
 # Example usage
-input_folder = 'Images/No_BG/spider_mite'
-output_folder = 'extracted/Dataset/Spider_mite'
+input_folder = 'extracted/d3/Dataset3/yellow_leaf_curl2'
+output_folder = 'extracted/d3/Dataset3/yellow_leaf_curls'
 brown_edge_detection(input_folder, output_folder)
